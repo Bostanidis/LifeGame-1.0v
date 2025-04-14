@@ -48,7 +48,7 @@ export default function AboutPage() {
                                 animate={{ opacity: 1 }}
                                 transition={{ delay: 0.3, duration: 0.5 }}
                             >
-                                Our mission is simple: to empower local businesses with a strong online presence. We believe that a great website is more than just code – it's a vital tool for growth, connection, and success in today's digital landscape. We blend cutting-edge technology with creative design to deliver results that matter.
+                                Our mission is simple: to empower local businesses with a strong online presence. We believe that a great website is more than just code – it&apos;s a vital tool for growth, connection, and success in today&apos;s digital landscape. We blend cutting-edge technology with creative design to deliver results that matter.
                             </motion.p>
                             
                             <motion.div
@@ -93,7 +93,7 @@ export default function AboutPage() {
                             >
                                 <p className="text-slate-600 dark:text-slate-400 mb-4">Ready to elevate your online presence?</p>
                                 <Link href="/contact" className="btn btn-primary">
-                                    Let's Build Together
+                                    Let&apos;s Build Together
                                 </Link>
                             </motion.div>
                         </div>

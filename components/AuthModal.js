@@ -166,7 +166,7 @@ export default function AuthModal({ isOpen, onClose, initialView = 'login' }) {
                             <p className="text-slate-600 dark:text-slate-400 mb-6">
                                 We've sent a verification link to
                                 <span className="font-medium text-slate-700 dark:text-slate-300 break-all"> {email}</span>.
-                                Please click the link in the email to activate your account. Check your spam folder if you don't see it.
+                                Please click the link in the email to activate your account. Check your spam folder if you don&apos;t see it.
                             </p>
 
                             {/* Resend Button */}
