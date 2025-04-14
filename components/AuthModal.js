@@ -164,7 +164,7 @@ export default function AuthModal({ isOpen, onClose, initialView = 'login' }) {
                             </div>
                             <h2 className="text-xl font-semibold mb-3 text-slate-800 dark:text-slate-100">Check Your Email</h2>
                             <p className="text-slate-600 dark:text-slate-400 mb-6">
-                                We've sent a verification link to
+                                We&apos;ve sent a verification link to
                                 <span className="font-medium text-slate-700 dark:text-slate-300 break-all"> {email}</span>.
                                 Please click the link in the email to activate your account. Check your spam folder if you don&apos;t see it.
                             </p>
@@ -242,7 +242,7 @@ export default function AuthModal({ isOpen, onClose, initialView = 'login' }) {
                                     {loading ? <span className="loading loading-spinner loading-sm\"></span> : 'Log In'}
                                 </button>
                                 <p className="text-sm text-center text-slate-500 dark:text-slate-400 pt-2">
-                                    Don't have an account?
+                                    Don&apos;t have an account?
                                     <button type="button" onClick={() => switchView('signup')} className="link link-hover text-primary dark:text-primary-focus ml-1">
                                         Sign Up
                                     </button>
