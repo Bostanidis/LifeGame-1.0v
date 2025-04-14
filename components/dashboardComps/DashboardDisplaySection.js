@@ -1,7 +1,7 @@
 'use client';
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { startOfWeek, subDays, addDays, format, isSameDay, parseISO, compareDesc } from 'date-fns';
+import { startOfWeek, subDays, subWeeks, addDays, format, isSameDay, parseISO, compareDesc } from 'date-fns';
 
 // Section 4: Dashboard Display
 export default function DashboardDisplaySection({ 
@@ -11,14 +11,23 @@ export default function DashboardDisplaySection({
     selectedGoals, habits, completedHabits, toggleHabitCompletion,
     completionHistory = {},
     unlockedAchievements,
-    achievementsList
+    achievementsList,
+    handleUpdateGoal,
+    handleUpdateHabit
 }) { 
-    const startOfVisibleWeek = startOfWeek(subDays(new Date(), 35 - 1), { weekStartsOn: 1 }); 
+
     const [showAchievementModal, setShowAchievementModal] = useState(false);
     const [selectedAchievement, setSelectedAchievement] = useState(null);
+    
+    // Edit modal states
+    const [showGoalEditModal, setShowGoalEditModal] = useState(false);
+    const [showHabitEditModal, setShowHabitEditModal] = useState(false);
+    const [editingGoal, setEditingGoal] = useState({ index: -1, value: '' });
+    const [editingHabit, setEditingHabit] = useState({ goalIndex: -1, habitIndex: -1, value: '' });
 
     // --- Recent Activity Log Data Prep ---
     const today = new Date();
+    const startOfVisibleWeek = startOfWeek(subWeeks(today, 4), { weekStartsOn: 1 });
     const recentActivity = Object.entries(completionHistory)
         .map(([dateString, count]) => ({ dateString, date: parseISO(dateString), count }))
         .filter(entry => entry.count > 0)
@@ -33,6 +42,42 @@ export default function DashboardDisplaySection({
     const handleCloseAchievementModal = () => {
         setShowAchievementModal(false);
         setSelectedAchievement(null);
+    };
+    
+    // Goal edit handlers
+    const handleOpenGoalEditModal = (goal, index) => {
+        setEditingGoal({ index, value: goal });
+        setShowGoalEditModal(true);
+    };
+    
+    const handleCloseGoalEditModal = () => {
+        setShowGoalEditModal(false);
+        setEditingGoal({ index: -1, value: '' });
+    };
+    
+    const handleGoalEditSubmit = () => {
+        if (editingGoal.index >= 0 && editingGoal.value.trim() !== '') {
+            handleUpdateGoal(editingGoal.index, editingGoal.value);
+            handleCloseGoalEditModal();
+        }
+    };
+    
+    // Habit edit handlers
+    const handleOpenHabitEditModal = (habit, goalIndex, habitIndex) => {
+        setEditingHabit({ goalIndex, habitIndex, value: habit });
+        setShowHabitEditModal(true);
+    };
+    
+    const handleCloseHabitEditModal = () => {
+        setShowHabitEditModal(false);
+        setEditingHabit({ goalIndex: -1, habitIndex: -1, value: '' });
+    };
+    
+    const handleHabitEditSubmit = () => {
+        if (editingHabit.goalIndex >= 0 && editingHabit.habitIndex >= 0 && editingHabit.value.trim() !== '') {
+            handleUpdateHabit(editingHabit.goalIndex, editingHabit.habitIndex, editingHabit.value);
+            handleCloseHabitEditModal();
+        }
     };
 
     return (
@@ -118,6 +163,35 @@ export default function DashboardDisplaySection({
                                 )}
                             </div>
                         </div>
+                        
+                        {/* Update History Card */}
+                        <div className="card bg-slate-50 dark:bg-slate-800 shadow-xl border border-slate-200 dark:border-slate-700">
+                            <div className="card-body">
+                                <h2 className="card-title text-xl text-slate-800 dark:text-slate-100 mb-2">Update History</h2>
+                                <p className="text-sm text-slate-500 dark:text-slate-400 mb-4">Latest updates to the app.</p>
+                                <div className="divider my-1 dark:before:bg-slate-700 dark:after:bg-slate-700"></div>
+                                <div className="space-y-4 max-h-60 overflow-y-auto pr-2">
+                                    <div className="p-3 rounded-lg bg-primary/10 dark:bg-primary/20 border border-primary/30">
+                                        <div className="flex items-center justify-between mb-2">
+                                            <h3 className="font-bold text-slate-800 dark:text-slate-100">v1.0 - Official Launch</h3>
+                                            <span className="text-xs font-medium text-slate-600 dark:text-slate-400">13.04.2025</span>
+                                        </div>
+                                        <p className="text-sm text-slate-700 dark:text-slate-300">
+                                            The official launch of LifeGame, a habit tracking app designed to help you build better habits and achieve your goals.
+                                        </p>
+                                    </div>
+                                    <div className="p-3 rounded-lg bg-primary/10 dark:bg-primary/20 border border-primary/30">
+                                        <div className="flex items-center justify-between mb-2">
+                                            <h3 className="font-bold text-slate-800 dark:text-slate-100">v1.1 - Enhanced Experience</h3>
+                                            <span className="text-xs font-medium text-slate-600 dark:text-slate-400">14.04.2025</span>
+                                        </div>
+                                        <p className="text-sm text-slate-700 dark:text-slate-300">
+                                            Added hamster loader, working contact form, more achievements, goal and habit editing, and calendar functionality.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
                     {/* --- Center Column (Habits & Quests) --- */}
@@ -134,6 +208,18 @@ export default function DashboardDisplaySection({
                                             <div className="flex items-center gap-2 mb-3">
                                                 <div className={`w-3 h-3 rounded-full ${goalIndex === 0 ? 'bg-primary' : 'bg-secondary'}`}></div>
                                                 <h3 className="font-bold text-slate-700 dark:text-slate-200">{goal}</h3>
+                                                <button 
+                                                    className="btn btn-ghost btn-xs btn-circle ml-auto"
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        handleOpenGoalEditModal(goal, goalIndex);
+                                                    }}
+                                                    aria-label="Edit goal"
+                                                >
+                                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4 text-slate-500 dark:text-slate-400">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
+                                                    </svg>
+                                                </button>
                                             </div>
                                             <div className="space-y-2 pl-5">
                                                 {Array.isArray(habits?.[goalIndex]) && habits[goalIndex].map((habit, habitIndex) => {
@@ -154,6 +240,18 @@ export default function DashboardDisplaySection({
                                                             <span className={`flex-1 text-slate-700 dark:text-slate-300 ${isCompleted ? 'line-through opacity-60' : ''}`}>
                                                                 {habit}
                                                             </span>
+                                                            <button 
+                                                                className="btn btn-ghost btn-xs btn-circle"
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    handleOpenHabitEditModal(habit, goalIndex, habitIndex);
+                                                                }}
+                                                                aria-label="Edit habit"
+                                                            >
+                                                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4 text-slate-500 dark:text-slate-400">
+                                                                    <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
+                                                                </svg>
+                                                            </button>
                                                             {isCompleted && (
                                                                 <div className="badge badge-success gap-1 text-success-content">
                                                                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
@@ -212,7 +310,7 @@ export default function DashboardDisplaySection({
                                 <h2 className="card-title text-xl text-slate-800 dark:text-slate-100">Achievements</h2>
                                  <p className="text-sm text-slate-500 dark:text-slate-400">Unlock rewards for consistency!</p>
                                 <div className="divider my-3 dark:before:bg-slate-700 dark:after:bg-slate-700"></div>
-                                <div className="flex flex-wrap gap-3 justify-start">
+                                <div className="flex flex-wrap gap-3 justify-start max-h-96 overflow-y-auto pr-2">
                                     {achievementsList.map((achievement) => {
                                         const isUnlocked = unlockedAchievements.has(achievement.id);
                                         const isHidden = achievement.hidden && !isUnlocked;
@@ -238,20 +336,55 @@ export default function DashboardDisplaySection({
                                                     <div className="flex items-center gap-2 overflow-hidden">
                                                         {isUnlocked ? (
                                                              <div className="text-primary flex-shrink-0">
-                                                                {/* Unlocked Icon */}
-                                                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5">
-                                                                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clipRule="evenodd" />
-                                                                </svg>
+                                                                {/* Contextual icon based on achievement type */}
+                                                                {achievement.id.startsWith('streak') ? (
+                                                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5">
+                                                                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clipRule="evenodd" />
+                                                                    </svg>
+                                                                ) : achievement.id.startsWith('level') ? (
+                                                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5">
+                                                                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clipRule="evenodd" />
+                                                                    </svg>
+                                                                ) : achievement.id.startsWith('habitMaster') ? (
+                                                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5">
+                                                                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clipRule="evenodd" />
+                                                                    </svg>
+                                                                ) : achievement.id === 'firstGoal' ? (
+                                                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5">
+                                                                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clipRule="evenodd" />
+                                                                    </svg>
+                                                                ) : achievement.id === 'goalEditor' || achievement.id === 'habitEditor' ? (
+                                                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5">
+                                                                        <path d="M5.433 13.917l1.262-3.155A4 4 0 017.58 9.42l6.92-6.918a2.121 2.121 0 013 3l-6.92 6.918c-.383.383-.84.685-1.343.886l-3.154 1.262a.5.5 0 01-.65-.65z" />
+                                                                        <path d="M3.5 5.75c0-.69.56-1.25 1.25-1.25H10A.75.75 0 0010 3H4.75A2.75 2.75 0 002 5.75v9.5A2.75 2.75 0 004.75 18h9.5A2.75 2.75 0 0017 15.25V10a.75.75 0 00-1.5 0v5.25c0 .69-.56 1.25-1.25 1.25h-9.5c-.69 0-1.25-.56-1.25-1.25v-9.5z" />
+                                                                    </svg>
+                                                                ) : achievement.id === 'perfectWeek' ? (
+                                                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5">
+                                                                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clipRule="evenodd" />
+                                                                    </svg>
+                                                                ) : achievement.id === 'habitDiversity' ? (
+                                                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5">
+                                                                        <path d="M10 9a3 3 0 100-6 3 3 0 000 6zM6 8a2 2 0 11-4 0 2 2 0 014 0zM1.49 15.326a.78.78 0 01-.358-.442 3 3 0 014.308-3.516 6.484 6.484 0 00-1.905 3.959c-.023.222-.014.442.025.654a4.97 4.97 0 01-2.07-.655zM16.44 15.98a4.97 4.97 0 002.07-.654.78.78 0 00.357-.442 3 3 0 00-4.308-3.517 6.484 6.484 0 011.907 3.96 2.32 2.32 0 01-.026.654zM18 8a2 2 0 11-4 0 2 2 0 014 0zM5.304 16.19a.844.844 0 01-.277-.71 5 5 0 019.947 0 .843.843 0 01-.277.71A6.975 6.975 0 0110 18a6.974 6.974 0 01-4.696-1.81z" />
+                                                                    </svg>
+                                                                ) : achievement.id === 'comebackKid' ? (
+                                                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5">
+                                                                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clipRule="evenodd" />
+                                                                    </svg>
+                                                                ) : achievement.id.startsWith('hidden') ? (
+                                                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5">
+                                                                        <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a.75.75 0 000 1.5h.253a.25.25 0 01.244.304l-.459 2.066A1.75 1.75 0 0010.747 15H11a.75.75 0 000-1.5h-.253a.25.25 0 01-.244-.304l.459-2.066A1.75 1.75 0 009.253 9H9z" clipRule="evenodd" />
+                                                                    </svg>
+                                                                ) : (
+                                                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5">
+                                                                        <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a.75.75 0 000 1.5h.253a.25.25 0 01.244.304l-.459 2.066A1.75 1.75 0 0010.747 15H11a.75.75 0 000-1.5h-.253a.25.25 0 01-.244-.304l.459-2.066A1.75 1.75 0 009.253 9H9z" clipRule="evenodd" />
+                                                                    </svg>
+                                                                )}
                                                             </div>
                                                         ) : (
                                                              <div className="text-slate-400 dark:text-slate-500 flex-shrink-0">
-                                                                  {/* Locked Icon */}
+                                                                  {/* Locked Icon - Changed to info icon */}
                                                                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5">
-                                                                    {isHidden ? (
-                                                                        <path fillRule="evenodd" d="M18 10a8 8 0 1 1-16 0 8 8 0 0 1 16 0ZM9.25 7.75a.75.75 0 0 0-1.5 0v2.5h-.75a.75.75 0 0 0 0 1.5h.75v2a.75.75 0 0 0 1.5 0v-2h.75a.75.75 0 0 0 0-1.5h-.75V7.75Zm5 .04a.75.75 0 0 1 .786.71l.005.09v1.75a3.75 3.75 0 1 1-6.13-.28A.75.75 0 0 1 9.25 10V8.46a5.235 5.235 0 0 1-.04-1.06 5.25 5.25 0 0 1 10.498 1.06l.001.09v1.7A.75.75 0 0 1 14.25 11Z" clipRule="evenodd" />
-                                                                    ) : (
-                                                                         <path fillRule="evenodd" d="M10 1a4.5 4.5 0 00-4.5 4.5V9H5a2 2 0 00-2 2v6a2 2 0 002 2h10a2 2 0 002-2v-6a2 2 0 00-2-2h-.5V5.5A4.5 4.5 0 0010 1zm3 8V5.5a3 3 0 10-6 0V9h6z" clipRule="evenodd" />
-                                                                    )}
+                                                                    <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a.75.75 0 000 1.5h.253a.25.25 0 01.244.304l-.459 2.066A1.75 1.75 0 0010.747 15H11a.75.75 0 000-1.5h-.253a.25.25 0 01-.244-.304l.459-2.066A1.75 1.75 0 009.253 9H9z" clipRule="evenodd" />
                                                                   </svg>
                                                               </div>
                                                         )}
@@ -277,48 +410,41 @@ export default function DashboardDisplaySection({
                             </div>
                          </div>
                          {/* Activity Heatmap */} 
-                        <div className="card bg-slate-50 dark:bg-slate-800 shadow-xl border border-slate-200 dark:border-slate-700">
+                         <div className="card bg-slate-50 dark:bg-slate-800 shadow-xl border border-slate-200 dark:border-slate-700">
                             <div className="card-body">
                                 <h2 className="card-title text-xl text-slate-800 dark:text-slate-100">Activity Calendar</h2>
                                 <p className="text-sm text-slate-500 dark:text-slate-400">Your habit completion history (last 5 weeks)</p>
                                 <div className="divider my-3 dark:before:bg-slate-700 dark:after:bg-slate-700"></div>
 
                                 <div className="grid grid-cols-7 gap-1.5">
-                                    {/* Render day labels */}
-                                    {['Mon', 'Wed', 'Fri', 'Sun'].map((day, index) => (
-                                        <div key={day} className={`text-xs text-center text-slate-400 dark:text-slate-500 ${
-                                            index === 0 ? 'col-start-1' : 
-                                            index === 1 ? 'col-start-3' :
-                                            index === 2 ? 'col-start-5' : 'col-start-7'
-                                        }`}>{day}</div>
+                                    {/* Render all day labels more consistently */}
+                                    {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day, index) => (
+                                        <div key={day} className="text-xs text-center text-slate-400 dark:text-slate-500">
+                                            {day}
+                                        </div>
                                     ))}
-                                     {/* Render heatmap cells */}
-                                     {Array.from({ length: 35 }).map((_, i) => {
+                                    
+                                    {/* Render heatmap cells */}
+                                    {Array.from({ length: 35 }).map((_, i) => {
                                         const cellDate = addDays(startOfVisibleWeek, i);
                                         const dateString = format(cellDate, 'yyyy-MM-dd');
-                                        // Ensure completionHistory is an object before accessing
-                                        const activityCount = (typeof completionHistory === 'object' && completionHistory !== null && completionHistory[dateString]) || 0;
+                                        // Safely access completion count with fallback to 0
+                                        const activityCount = completionHistory?.[dateString] || 0;
                                         
-                                        // Use fixed denominator instead of variable allHabitsTodayCount
+                                        // Use fixed denominator
                                         const maxPossible = 6; // Fixed total - 2 goals with 3 habits each
                                         const completionPercent = Math.min(100, Math.round((activityCount / maxPossible) * 100));
                                         
-                                        const cellIsToday = isSameDay(cellDate, today); // Check if the cell date is today
+                                        const cellIsToday = isSameDay(cellDate, today);
                                         
-                                        // Define base classes
+                                        // Define classes based on completion percentage
                                         let baseClasses = "h-5 w-full rounded-sm transition-colors duration-150";
-                                        // Define background color classes
-                                        let bgClass = "bg-slate-200 dark:bg-slate-700/60"; // Default (0%)
-                                        if (completionPercent > 0 && completionPercent <= 33) {
-                                            bgClass = "bg-primary/20 dark:bg-primary/30";
-                                        } else if (completionPercent > 33 && completionPercent <= 66) {
-                                            bgClass = "bg-primary/50 dark:bg-primary/60";
-                                        } else if (completionPercent > 66 && completionPercent < 100) {
-                                            bgClass = "bg-primary/70 dark:bg-primary/80";
-                                        } else if (completionPercent >= 100) {
-                                            bgClass = "bg-primary dark:bg-primary"; // Full completion
-                                        }
-                                        // Define border classes (add special border for today)
+                                        let bgClass = completionPercent === 0 ? "bg-slate-200 dark:bg-slate-700/60" :
+                                                    completionPercent <= 33 ? "bg-primary/20 dark:bg-primary/30" :
+                                                    completionPercent <= 66 ? "bg-primary/50 dark:bg-primary/60" :
+                                                    completionPercent < 100 ? "bg-primary/70 dark:bg-primary/80" :
+                                                                            "bg-primary dark:bg-primary";
+                                        
                                         let borderClass = cellIsToday 
                                             ? "border-2 border-secondary dark:border-secondary-focus shadow-inner" 
                                             : "hover:border-slate-400 dark:hover:border-slate-500 border-2 border-transparent";
@@ -332,12 +458,13 @@ export default function DashboardDisplaySection({
                                         );
                                     })}
                                 </div>
-                                 <div className="flex justify-between text-xs mt-2 text-slate-400 dark:text-slate-500">
+                                
+                                <div className="flex justify-between text-xs mt-2 text-slate-400 dark:text-slate-500">
                                     <span>{format(startOfVisibleWeek, 'MMM d')}</span>
                                     <span>Today is {format(today, 'MMM d')}</span>
                                 </div>
                             </div>
-                         </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -357,6 +484,58 @@ export default function DashboardDisplaySection({
                     </form>
                 </dialog>
             )}
+            
+            {/* Goal Edit Modal */}
+            <dialog id="goal_edit_modal" className={`modal ${showGoalEditModal ? 'modal-open' : ''}`}>
+                <div className="modal-box bg-white dark:bg-slate-800">
+                    <h3 className="font-bold text-lg mb-4 text-slate-800 dark:text-slate-100">Edit Goal</h3>
+                    <div className="form-control w-full">
+                        <label className="label">
+                            <span className="label-text text-slate-700 dark:text-slate-300">Goal Name</span>
+                        </label>
+                        <input 
+                            type="text" 
+                            className="input input-bordered w-full bg-slate-50 dark:bg-slate-700 text-slate-800 dark:text-slate-100" 
+                            value={editingGoal.value}
+                            onChange={(e) => setEditingGoal({...editingGoal, value: e.target.value})}
+                            placeholder="Enter goal name"
+                        />
+                    </div>
+                    <div className="modal-action mt-6">
+                        <button className="btn btn-ghost" onClick={handleCloseGoalEditModal}>Cancel</button>
+                        <button className="btn btn-primary" onClick={handleGoalEditSubmit}>Save</button>
+                    </div>
+                </div>
+                <form method="dialog" className="modal-backdrop">
+                    <button onClick={handleCloseGoalEditModal}>close</button>
+                </form>
+            </dialog>
+            
+            {/* Habit Edit Modal */}
+            <dialog id="habit_edit_modal" className={`modal ${showHabitEditModal ? 'modal-open' : ''}`}>
+                <div className="modal-box bg-white dark:bg-slate-800">
+                    <h3 className="font-bold text-lg mb-4 text-slate-800 dark:text-slate-100">Edit Habit</h3>
+                    <div className="form-control w-full">
+                        <label className="label">
+                            <span className="label-text text-slate-700 dark:text-slate-300">Habit Name</span>
+                        </label>
+                        <input 
+                            type="text" 
+                            className="input input-bordered w-full bg-slate-50 dark:bg-slate-700 text-slate-800 dark:text-slate-100" 
+                            value={editingHabit.value}
+                            onChange={(e) => setEditingHabit({...editingHabit, value: e.target.value})}
+                            placeholder="Enter habit name"
+                        />
+                    </div>
+                    <div className="modal-action mt-6">
+                        <button className="btn btn-ghost" onClick={handleCloseHabitEditModal}>Cancel</button>
+                        <button className="btn btn-primary" onClick={handleHabitEditSubmit}>Save</button>
+                    </div>
+                </div>
+                <form method="dialog" className="modal-backdrop">
+                    <button onClick={handleCloseHabitEditModal}>close</button>
+                </form>
+            </dialog>
         </motion.section>
     );
 } 

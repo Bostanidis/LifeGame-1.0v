@@ -3,8 +3,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 
-// You might want to use a library like react-hook-form for more robust form handling
-
 export default function ContactPage() {
     const [formData, setFormData] = useState({
         name: '',
@@ -25,15 +23,25 @@ export default function ContactPage() {
         setIsSubmitting(true);
         setSubmitStatus(null);
 
-        // --- Form Submission Logic --- 
-        // Replace this with your actual form submission endpoint (e.g., Formspree, Netlify Forms, backend API)
-        console.log("Submitting form data:", formData);
         try {
-            // Example: Simulate API call
-            await new Promise(resolve => setTimeout(resolve, 1500)); 
-            // Assume success for demo
-            setSubmitStatus('success');
-            setFormData({ name: '', email: '', subject: '', message: '' }); // Reset form
+            // Replace YOUR_FORM_ID with the actual form ID from Formspree
+            const response = await fetch(`https://formspree.io/f/${process.env.NEXT_PUBLIC_FORMSPREE_ID}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(formData),
+            });
+
+            if (response.ok) {
+                setSubmitStatus('success');
+                setFormData({ name: '', email: '', subject: '', message: '' }); // Reset form
+            } else {
+                // If the server responds with an error
+                const errorData = await response.json();
+                console.error("Form submission error:", errorData);
+                setSubmitStatus('error');
+            }
         } catch (error) {
             console.error("Form submission error:", error);
             setSubmitStatus('error');
@@ -92,10 +100,8 @@ export default function ContactPage() {
                             </h3>
                              <p className="text-sm text-slate-500 dark:text-slate-400">
                                  We are located in sunny Limassol!
-                                 {/* Replace with map embed or link later */}
                              </p>
                          </div>
-                         {/* Optional: Add Phone or Social Links here */}
                      </motion.div>
 
                      {/* Contact Form Section */}

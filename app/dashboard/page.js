@@ -21,22 +21,35 @@ const achievementsList = [
     { id: 'streak3', name: 'Consistency Cultivator', description: 'Complete all habits for 3 consecutive days.', check: (streak) => streak >= 3 },
     { id: 'streak7', name: 'Weekly Warrior', description: 'Complete all habits for 7 consecutive days.', check: (streak) => streak >= 7 },
     { id: 'streak14', name: 'Fortnightly Fire', description: 'Maintain a habit streak for 14 days.', check: (streak) => streak >= 14 },
-    { id: 'streak30', name: 'Monthly Master', description: 'Achieve a 30-day habit streak.', check: (streak) => streak >= 30 }, // New
+    { id: 'streak30', name: 'Monthly Master', description: 'Achieve a 30-day habit streak.', check: (streak) => streak >= 30 },
+    { id: 'streak100', name: 'Century Champion', description: 'Achieve a 100-day habit streak.', check: (streak) => streak >= 100 },
     // Levels
     { id: 'level5', name: 'Level 5 Hero', description: 'Reach level 5.', check: (level) => level >= 5 },
     { id: 'level10', name: 'Level 10 Champion', description: 'Reach level 10.', check: (level) => level >= 10 },
     { id: 'level20', name: 'Level 20 Legend', description: 'Reach level 20.', check: (level) => level >= 20 },
-    { id: 'level30', name: 'Level 30 Mythic', description: 'Reach level 30.', check: (level) => level >= 30 }, // New
+    { id: 'level30', name: 'Level 30 Mythic', description: 'Reach level 30.', check: (level) => level >= 30 },
+    { id: 'level50', name: 'Level 50 Immortal', description: 'Reach level 50.', check: (level) => level >= 50 },
+    { id: 'level100', name: 'Level 100 Deity', description: 'Reach level 100.', check: (level) => level >= 100 },
     // Habit Counts
     { id: 'habitMaster10', name: 'Habit Initiate (10)', description: 'Complete 10 habits in total.', check: (totalCompleted) => totalCompleted >= 10 },
     { id: 'habitMaster50', name: 'Habit Adept (50)', description: 'Complete 50 habits in total.', check: (totalCompleted) => totalCompleted >= 50 },
     { id: 'habitMaster100', name: 'Habit Veteran (100)', description: 'Complete 100 habits in total.', check: (totalCompleted) => totalCompleted >= 100 },
-    { id: 'habitMaster250', name: 'Habit Expert (250)', description: 'Complete 250 habits in total.', check: (totalCompleted) => totalCompleted >= 250 }, // New
+    { id: 'habitMaster250', name: 'Habit Expert (250)', description: 'Complete 250 habits in total.', check: (totalCompleted) => totalCompleted >= 250 },
+    { id: 'habitMaster500', name: 'Habit Master (500)', description: 'Complete 500 habits in total.', check: (totalCompleted) => totalCompleted >= 500 },
+    { id: 'habitMaster1000', name: 'Habit Grandmaster (1000)', description: 'Complete 1000 habits in total.', check: (totalCompleted) => totalCompleted >= 1000 },
     // Setup
     { id: 'firstGoal', name: 'Quest Giver', description: 'Set your first goals and habits.', check: (setupComplete) => setupComplete },
+    { id: 'goalEditor', name: 'Quest Refiner', description: 'Edit a goal to better suit your journey.', check: (/* Will be checked manually */) => false },
+    { id: 'habitEditor', name: 'Habit Sculptor', description: 'Edit a habit to better align with your goals.', check: (/* Will be checked manually */) => false },
+    // Special Achievements
+    { id: 'perfectWeek', name: 'Perfect Week', description: 'Complete all habits every day for a full week.', check: (/* Will be checked manually */) => false },
+    { id: 'habitDiversity', name: 'Habit Diversity', description: 'Complete habits from all your different goals in a single day.', check: (/* Will be checked manually */) => false },
+    { id: 'comebackKid', name: 'Comeback Kid', description: 'Break a streak and then start a new one of at least 3 days.', check: (/* Will be checked manually */) => false },
     // Hidden
-    { id: 'hidden1', name: '???', description: 'Keep exploring and completing habits...', unlockedDescription: 'Early Bird: Completed a habit before 8 AM.', check: (/* Needs specific logic */) => false, hidden: true }, // New Hidden Example
-    { id: 'hidden2', name: '???', description: 'Something special awaits...', unlockedDescription: 'Night Owl: Completed a habit after 10 PM.', check: (/* Needs specific logic */) => false, hidden: true }, // New Hidden Example
+    { id: 'hidden1', name: '???', description: 'Keep exploring and completing habits...', unlockedDescription: 'Early Bird: Completed a habit before 8 AM.', check: (/* Needs specific logic */) => false, hidden: true },
+    { id: 'hidden2', name: '???', description: 'Something special awaits...', unlockedDescription: 'Night Owl: Completed a habit after 10 PM.', check: (/* Needs specific logic */) => false, hidden: true },
+    { id: 'hidden3', name: '???', description: 'A mysterious achievement...', unlockedDescription: 'Weekend Warrior: Complete all habits on both Saturday and Sunday.', check: (/* Needs specific logic */) => false, hidden: true },
+    { id: 'hidden4', name: '???', description: 'An enigmatic challenge...', unlockedDescription: 'Habit Explorer: Edit at least one goal and one habit.', check: (/* Will be checked manually */) => false, hidden: true },
 ];
 
 // Function to calculate current streak
@@ -279,6 +292,12 @@ export default function Dashboard() {
                         conditionMet = achievement.check(currentTotalCompleted);
                     } else if (achievement.id === 'firstGoal') {
                         conditionMet = achievement.check(setupComplete);
+                    } else if (achievement.id === 'goalEditor' || achievement.id === 'habitEditor' || 
+                               achievement.id === 'perfectWeek' || achievement.id === 'habitDiversity' || 
+                               achievement.id === 'comebackKid' || achievement.id === 'hidden4') {
+                        // These achievements will be checked manually when the user performs the action
+                        // For now, we'll just skip them
+                        conditionMet = false;
                     } else {
                         console.warn(`Unknown achievement check type for ID: ${achievement.id}`);
                     }
@@ -299,6 +318,50 @@ export default function Dashboard() {
             setUnlockedAchievements(updatedAchievements);
         }
     }, [level, streak, totalHabitsCompletedEver, selectedGoals, habits, unlockedAchievements, setUnlockedAchievements]);
+
+    // Function to update a goal
+    const handleUpdateGoal = useCallback((index, newValue) => {
+        setSelectedGoals(prev => {
+            const updated = [...prev];
+            updated[index] = newValue;
+            return updated;
+        });
+        
+        // Unlock the goalEditor achievement
+        setUnlockedAchievements(prev => {
+            const updated = new Set(prev);
+            updated.add('goalEditor');
+            return updated;
+        });
+    }, []);
+
+    // Function to update a habit
+    const handleUpdateHabit = useCallback((goalIndex, habitIndex, newValue) => {
+        setHabits(prev => {
+            const updated = [...prev];
+            if (!updated[goalIndex]) {
+                updated[goalIndex] = [];
+            }
+            updated[goalIndex][habitIndex] = newValue;
+            return updated;
+        });
+        
+        // Unlock the habitEditor achievement
+        setUnlockedAchievements(prev => {
+            const updated = new Set(prev);
+            updated.add('habitEditor');
+            return updated;
+        });
+        
+        // Check if both goal and habit have been edited to unlock hidden4
+        if (unlockedAchievements.has('goalEditor')) {
+            setUnlockedAchievements(prev => {
+                const updated = new Set(prev);
+                updated.add('hidden4');
+                return updated;
+            });
+        }
+    }, [unlockedAchievements]);
 
     useEffect(() => {
         if (pageStatus === 'ready' && user?.emailVerified) {
@@ -495,6 +558,8 @@ export default function Dashboard() {
                               completionHistory={completionHistory}
                               unlockedAchievements={unlockedAchievements}
                               achievementsList={achievementsList}
+                              handleUpdateGoal={handleUpdateGoal}
+                              handleUpdateHabit={handleUpdateHabit}
                           />);
              case 'error': // Handle data loading error
                 return (
