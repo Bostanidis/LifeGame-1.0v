@@ -56,6 +56,8 @@ export default function DashboardDisplaySection({
                                         <img 
                                             src={`https://api.dicebear.com/9.x/dylan/svg?seed=Hero${level}`}
                                             alt="Avatar" 
+                                            width="112"
+                                            height="112"
                                             className="bg-slate-100 dark:bg-slate-700"
                                         />
                                     </div>
@@ -73,7 +75,7 @@ export default function DashboardDisplaySection({
     
                                 <div className="stats stats-vertical lg:stats-horizontal shadow mt-6 bg-transparent text-slate-700 dark:text-slate-300">
                                     <div className="stat">
-                                        <div className="stat-title dark:text-slate-400">Today's Habits</div>
+                                        <div className="stat-title dark:text-slate-400">Today&apos;s Habits</div>
                                         <div className="stat-value text-primary">{completedHabitsTodayCount}/{allHabitsTodayCount}</div>
                                         <div className="stat-desc dark:text-slate-500">{completionPercentageToday}% complete</div>
                                     </div>
@@ -123,7 +125,7 @@ export default function DashboardDisplaySection({
                         {/* Today's Habits */} 
                         <div className="card bg-slate-50 dark:bg-slate-800 shadow-xl border border-slate-200 dark:border-slate-700">
                             <div className="card-body">
-                                <h2 className="card-title text-xl text-slate-800 dark:text-slate-100">Today's Habits</h2>
+                                <h2 className="card-title text-xl text-slate-800 dark:text-slate-100">Today&apos;s Habits</h2>
                                 <p className="text-sm text-slate-500 dark:text-slate-400">Complete daily habits to gain XP!</p>
                                 <div className="divider my-3 dark:before:bg-slate-700 dark:after:bg-slate-700"></div>
                                 <div className="space-y-4 max-h-96 overflow-y-auto pr-2">

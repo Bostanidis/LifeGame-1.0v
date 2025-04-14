@@ -26,6 +26,8 @@ export default function Hero() {
                         <img 
                             src="https://api.dicebear.com/9.x/dylan/svg?seed=Felix"
                             alt="Hero Avatar"
+                            width="64"
+                            height="64"
                             className="w-full h-full object-cover bg-slate-100 dark:bg-slate-700"
                         />
                     </div>

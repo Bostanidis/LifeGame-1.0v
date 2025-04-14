@@ -24,6 +24,8 @@ export default function AboutPage() {
                             <img 
                                 src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/cc/Skyscrapers_in_Limassol.jpg/960px-Skyscrapers_in_Limassol.jpg" // Fetches a random image tagged limassol, cyprus
                                 alt="View of Limassol, Cyprus"
+                                width="64"
+                                height="64"
                                 className="absolute inset-0 w-full h-full object-cover object-[70%] bg-slate-300 dark:bg-slate-600" // Added bg color while loading
                             />
                              <div className="absolute inset-0 bg-gradient-to-t from-slate-900/60 to-transparent"></div>
