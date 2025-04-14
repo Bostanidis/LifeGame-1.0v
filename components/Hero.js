@@ -59,7 +59,7 @@ export default function Hero() {
                   </div>
                 </div>
               </div>
-              <span className="text-sm text-slate-500 dark:text-slate-400">Join 2,500+ users leveling up</span>
+              <span className="text-sm text-slate-500 dark:text-slate-400">Join 500+ users leveling up</span>
             </div>
           </div>
         </div>
