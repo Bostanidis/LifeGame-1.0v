@@ -73,7 +73,7 @@ export default function DashboardDisplaySection({
                                     <p className="text-xs mt-1 text-slate-500 dark:text-slate-400">{experienceToNextLevel} XP to next level</p>
                                 </div>
     
-                                <div className="stats stats-vertical lg:stats-horizontal shadow mt-6 bg-transparent text-slate-700 dark:text-slate-300">
+                                <div className="stats stats-horizontal shadow mt-6 bg-transparent text-slate-700 dark:text-slate-300">
                                     <div className="stat">
                                         <div className="stat-title dark:text-slate-400">Today&apos;s Habits</div>
                                         <div className="stat-value text-primary">{completedHabitsTodayCount}/{allHabitsTodayCount}</div>
