@@ -17,7 +17,7 @@ const raleway = Raleway({
 });
 
 export const metadata = {
-  title: "Quiddity",
+  title: "LifeGame",
   description: "Habit tracker app like video game",
 };
 
